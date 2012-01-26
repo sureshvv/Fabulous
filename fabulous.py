@@ -1,4 +1,4 @@
-from fabric.api import *
+from fabric.api import env, run, sudo, put, cd
 from fabric.colors import green as _green, yellow as _yellow
 from fabulous_conf import *
 from cookbook import recipe
@@ -24,6 +24,7 @@ def fab():
     start_time = time.time()
     print(_green("Started..."))
     env.host_string = _create_server()
+    #env.host_string = "ec2-50-17-172-13.compute-1.amazonaws.com"
     print(_green("Waiting 30 seconds for server to boot..."))
     time.sleep(30)
     _oven()
@@ -36,7 +37,14 @@ def _oven():
     """
     Cooks the recipe. Fabulous!
     """
+    started = False;
     for ingredient in recipe:
+        if not started:
+            if ingredient['action'] == "start":
+                started = True
+            continue
+        if ingredient['action'] == "stop":
+            break
         try:
             print(_yellow(ingredient['message']))
         except KeyError:

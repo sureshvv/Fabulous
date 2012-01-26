@@ -4,6 +4,7 @@
 # Ingredients: nginx, memecached, gunicorn, supervisord, virtualenv, git
 
 recipe = [
+  {"action":"start" },
   # First command as regular user
   {"action":"run", "params":"whoami"},
 
@@ -65,11 +66,13 @@ recipe = [
   {"action":"run", "params":"mkvirtualenv --no-site-packages %(PROJECT_NAME)s",
     "message":"Creating virtualenv"},
   
+  # Clone git project
+  {"action":"run", "params":"git clone %(GITHUB_REPO)s %(PROJECT_PATH)s",
+    "message":"Cloning git project"},
+
   # install django in virtual env
   {"action":"virtualenv", "params":"pip install django",
     "message":"Installing django"},
-  {"action":"virtualenv", "params":"django-admin.py startproject %(PROJECT_NAME)s",
-    "message":"Creating a blank django project"},
   
   # install gunicorn in virtual env
   {"action":"virtualenv", "params":"pip install gunicorn",
@@ -77,6 +80,9 @@ recipe = [
   {"action":"put", "params":{"file":"%(FABULOUS_PATH)s/templates/gunicorn.conf.py",
                             "destination":"%(PROJECT_PATH)s/gunicorn.conf.py"}},
                             
+  # Link settings file
+  {"action":"run", "params":"ln -s %(PROJECT_PATH)s/settings/defaults.py %(PROJECT_PATH)s/settings.py", "message":"Linking settings"},
+
   # Setup supervisor
   {"action":"run", "params":"echo_supervisord_conf > /home/%(SERVER_USERNAME)s/supervisord.conf",
     "message":"Configuring supervisor"},
